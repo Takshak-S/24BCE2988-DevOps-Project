@@ -1,4 +1,4 @@
-package com.example.event.controller;
+package com.example.events.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,4 +26,13 @@ public class HomeController {
         return "speakers";
     }
 
+    @GetMapping("/contact")
+    public String contact() {
+        return "contact";
+    }
+
+    @GetMapping("/announcements")
+    public String announcements() {
+        return "announcements";
+    }
 }
