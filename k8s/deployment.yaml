@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: events
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: events
+
+  template:
+    metadata:
+      labels:
+        app: events
+
+    spec:
+      containers:
+        - name: events
+          image: events:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8081

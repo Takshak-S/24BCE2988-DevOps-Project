@@ -10,6 +10,7 @@ pipeline {
     environment {
         IMAGE_NAME = "events"
         IMAGE_TAG = "latest"
+        CONTAINER_NAME = "events"
     }
 
     stages {
@@ -23,84 +24,77 @@ pipeline {
 
         stage('Verify Environment') {
             steps {
-                echo "Verifying Java..."
                 sh 'java -version'
-
-                echo "Verifying Maven..."
                 sh 'mvn -version'
-
-                echo "Verifying Docker..."
                 sh 'docker --version'
-
-                echo "Verifying Git..."
-                sh 'git --version'
+                sh 'kubectl version --client'
             }
         }
 
         stage('Clean Project') {
             steps {
-                echo "Cleaning project..."
                 sh 'mvn clean'
             }
         }
 
         stage('Compile Project') {
             steps {
-                echo "Compiling project..."
                 sh 'mvn compile'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                echo "Running unit tests..."
                 sh 'mvn test'
             }
         }
 
         stage('Package Application') {
             steps {
-                echo "Packaging Spring Boot application..."
                 sh 'mvn package'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
                 sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
 
         stage('Deploy Docker Container') {
             steps {
-                echo "Deploying Docker container..."
-
                 sh '''
-                docker stop events 2>/dev/null || true
-                docker rm events 2>/dev/null || true
+                    docker stop ${CONTAINER_NAME} 2>/dev/null || true
+                    docker rm ${CONTAINER_NAME} 2>/dev/null || true
 
-        docker run -d \
-          --name events \
-          -p 8081:8081 \
-          events:latest
-        '''
-    }
-}
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -p 8081:8081 \
+                        ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+            }
+        }
 
-        stage('List Docker Images') {
-    steps {
-        echo "Available Docker Images"
-        sh 'docker images'
-    }
-}
+        stage('Verify Docker Deployment') {
+            steps {
+                sh 'docker ps'
+            }
+        }
 
-stage('Verify Running Container') {
-    steps {
-        echo "Running Containers"
-        sh 'docker ps'
-    }
-}
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f k8s/deployment.yaml'
+                sh 'kubectl apply -f k8s/service.yaml'
+            }
+        }
+
+        stage('Verify Kubernetes Deployment') {
+            steps {
+                sh 'kubectl get deployments'
+                sh 'kubectl get pods'
+                sh 'kubectl get svc'
+            }
+        }
 
     }
 
@@ -113,8 +107,8 @@ stage('Verify Running Container') {
         success {
             echo "======================================="
             echo "BUILD SUCCESSFUL"
-            echo "Spring Boot Build Completed"
-            echo "Docker Image Created"
+            echo "Docker Deployment Successful"
+            echo "Kubernetes Deployment Successful"
             echo "======================================="
         }
 
