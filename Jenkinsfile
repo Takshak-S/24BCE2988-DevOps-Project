@@ -72,12 +72,35 @@ pipeline {
             }
         }
 
-        stage('List Docker Images') {
+        stage('Deploy Docker Container') {
             steps {
-                echo "Available Docker Images"
-                sh 'docker images'
-            }
-        }
+                echo "Deploying Docker container..."
+
+                sh '''
+                docker stop events 2>/dev/null || true
+                docker rm events 2>/dev/null || true
+
+        docker run -d \
+          --name events \
+          -p 8081:8081 \
+          events:latest
+        '''
+    }
+}
+
+        stage('List Docker Images') {
+    steps {
+        echo "Available Docker Images"
+        sh 'docker images'
+    }
+}
+
+stage('Verify Running Container') {
+    steps {
+        echo "Running Containers"
+        sh 'docker ps'
+    }
+}
 
     }
 
