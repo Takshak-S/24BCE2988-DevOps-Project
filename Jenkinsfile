@@ -10,7 +10,6 @@ pipeline {
     environment {
         IMAGE_NAME = "events"
         IMAGE_TAG = "latest"
-        CONTAINER_NAME = "events"
     }
 
     stages {
@@ -95,8 +94,8 @@ stage('Verify Kubernetes Deployment') {
         success {
             echo "======================================="
             echo "BUILD SUCCESSFUL"
-            echo "Docker Deployment Successful"
-            echo "Kubernetes Deployment Successful"
+            echo "Docker Image Built Successfully"
+            echo "Application Deployed to Kubernetes"
             echo "======================================="
         }
 
